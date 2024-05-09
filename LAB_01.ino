@@ -21,6 +21,7 @@ const int buttonPin3 = 13;
 
 // Define colors
 #define BLACK   0x0000
+#define GRAY    0x1111
 #define BLUE    0x001F
 #define RED     0xF800
 #define GREEN   0x07E0
@@ -74,10 +75,7 @@ void loop()
   float voltage = sensorMqValue * (5.0 / 1023.0);
   float airQuality = voltage * 100; // Escala el valor a un rango de 0 a 100
 
-  // Leer el sensor DHT
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
-  float f = dht.readTemperature(true);
+  
 
   // Definir las coordenadas para dibujar
   uint16_t x = 0, y = 100;
@@ -89,41 +87,76 @@ void loop()
 
   switch (buttonPressed) {
     case 1: // Calidad de aire
-      tft.fillRect(x, y, 200, 50, BLACK); // Limpiar área específica
       tft.setCursor(x, y);
-      tft.println("* Calidad de aire:");
+      tft.setTextSize(3);
+      tft.println("Calidad de aire:");
+      tft.setTextSize(4);
       tft.println(airQuality);
       break;
     case 2: // Humedad y temperatura
-      if (isnan(h) || isnan(t) || isnan(f)) {
-        Serial.println(F("Failed to read from DHT sensor!"));
-        return;
-      }
-      tft.fillRect(x, y, 200, 50, BLACK); // Limpiar área específica
-      tft.setCursor(x, y);
-      tft.println("* Humedad:");
-      tft.println(h);
-      tft.println("* Temperatura:");
-      tft.println(t);
+      metricasDHT11(x, y);
       break;
     default: // Bienvenida
-      drawSun();
-      tft.setCursor(30, y);
-      tft.setTextColor(YELLOW, BLACK);
-      tft.println("= BIENVENIDOS =");
-      tft.setCursor(25, y+40);
-      tft.setTextColor(RED, BLACK);
-      tft.println("--- GRUPO 11 ---");
-      tft.println("");
-      tft.setTextColor(WHITE, BLACK);
-      tft.println("Presione un boton...");
-      tft.println("");
-      tft.println("Integrantes:");
-      tft.println("- Castillon Gabriel");
-      tft.println("- Mondalgo Tapia");
-      tft.println("- Pineda Silupu");
-      tft.println("- Gutierrez Mudarra");
+      bienvenida(x, y);
   }
+}
+
+void metricasDHT11 (uint16_t x, uint16_t y) {
+  // Leer el sensor DHT
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  if (isnan(h) || isnan(t)) {
+    Serial.println(F("Failed to read from DHT sensor!"));
+    return;
+  }
+  tft.setCursor(x, y-40);
+  tft.setTextSize(3);
+  tft.setTextColor(CYAN, BLACK);
+  tft.println("Humedad:");
+  tft.setTextSize(4);
+  tft.print(h);
+  tft.print(" %");
+  tft.println("");
+  tft.println("");
+  tft.setTextSize(3);
+  tft.setTextColor(YELLOW, BLACK);
+  tft.println("Temperatura:");
+  tft.setTextSize(4);
+  tft.print(t);
+  tft.print(" C");
+  tft.println("");
+  tft.println("");
+  if(t>20){
+    tft.setTextColor(RED, BLACK);
+    tft.println("CALOR");
+  }else if (t > 12){
+    tft.setTextColor(YELLOW, BLACK);
+    tft.println("TEMPLADO");
+  }else {
+    tft.setTextColor(GREEN, BLACK);
+    tft.println("FRIO");
+  }
+}
+
+void bienvenida(uint16_t x, uint16_t y) {
+  drawSun();
+  tft.setCursor(30, y);
+  tft.setTextColor(YELLOW, BLACK);
+  tft.println("= BIENVENIDOS =");
+  tft.setCursor(25, y+40);
+  tft.setTextColor(RED, BLACK);
+  tft.println("--- GRUPO 11 ---");
+  tft.println("");
+  tft.setTextColor(GRAY, WHITE);
+  tft.println("Presione un boton...");
+  tft.println("");
+  tft.setTextColor(ORANGE, BLACK);
+  tft.println("Integrantes:");
+  tft.setTextColor(WHITE, BLACK);
+  tft.println("- Castillon Gabriel");
+  tft.println("- Mondalgo Tapia");
+  tft.println("- Pineda Silupu");
+  tft.println("- Gutierrez Mudarra");
 }
 
 void drawSun() {
