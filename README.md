@@ -29,11 +29,14 @@ donde se encuentre.
 
 ## Demostración final:
 - Botón 03 e inicio:
+
 ![imagen](https://github.com/Jmond544/IOT-LAB-01/assets/90876139/1a969f6b-99b4-4707-ba84-07325be19348)
 
 - Botón 2:
+
 ![imagen](https://github.com/Jmond544/IOT-LAB-01/assets/90876139/367d6158-d3d4-410b-8504-d39477089a5f)
 
 - Botón 1:
+
 ![imagen](https://github.com/Jmond544/IOT-LAB-01/assets/90876139/4fc72ffe-083c-4a4d-95db-c1d93f5e3cf4)
 
