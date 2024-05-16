@@ -18,6 +18,8 @@ const int buttonPin1 = 11;
 const int buttonPin2 = 12;
 const int buttonPin3 = 13;
 
+const int screenWidth = 240;
+const int screenHeight = 320;
 
 // Define colors
 #define BLACK   0x0000
@@ -68,15 +70,6 @@ void loop()
     buttonPressed = 3;
   }
 
-  Serial.println(buttonPressed);
-
-  // Leer el sensor MQ135
-  int sensorMqValue = analogRead(PIN_MQ135);
-  float voltage = sensorMqValue * (5.0 / 1023.0);
-  float airQuality = voltage * 100; // Escala el valor a un rango de 0 a 100
-
-  
-
   // Definir las coordenadas para dibujar
   uint16_t x = 0, y = 100;
   
@@ -87,11 +80,7 @@ void loop()
 
   switch (buttonPressed) {
     case 1: // Calidad de aire
-      tft.setCursor(x, y);
-      tft.setTextSize(3);
-      tft.println("Calidad de aire:");
-      tft.setTextSize(4);
-      tft.println(airQuality);
+      metricasMq135(x, y);
       break;
     case 2: // Humedad y temperatura
       metricasDHT11(x, y);
@@ -99,6 +88,52 @@ void loop()
     default: // Bienvenida
       bienvenida(x, y);
   }
+}
+
+void metricasMq135 (uint16_t x, uint16_t y) {
+  // Leer el sensor MQ135
+  int sensorMqValue = analogRead(PIN_MQ135);
+
+  // Imprimir Calidad de aire
+  String calidadStr = " Calidad de aire:";
+  int16_t x1, y1;
+  uint16_t wi, he;
+  tft.setTextSize(2);
+  tft.setTextColor(BLACK, CYAN);
+  tft.getTextBounds(calidadStr, 0, 0, &x1, &y1, &wi, &he);
+  tft.setCursor((screenWidth - wi) / 2, screenHeight / 2 - 80);
+  tft.println(calidadStr);
+
+  // Imprimir valor calidad de aire
+  tft.setTextColor(CYAN, BLACK);
+  tft.setTextSize(4);
+  String calidadVal = String(sensorMqValue) + " ppm";
+  tft.getTextBounds(calidadVal, 0, 0, &x1, &y1, &wi, &he);
+  tft.setCursor((screenWidth - wi) / 2, screenHeight / 2 - 50);
+  tft.println(calidadVal);
+
+  tft.setTextSize(3);
+  String statusCalidad;
+  if (sensorMqValue <= 350) {
+    tft.setTextColor(BLACK, GREEN);
+    statusCalidad = "Calidad alta";
+  } else if (sensorMqValue > 350 && sensorMqValue <= 500) {
+    tft.setTextColor(BLACK, GREEN);
+    statusCalidad = "Calidad buena";
+  } else if (sensorMqValue > 500 && sensorMqValue <= 800) {
+    tft.setTextColor(BLACK, YELLOW);
+    statusCalidad = "Calidad moderada";
+  } else if (sensorMqValue > 800 && sensorMqValue <= 1200) {
+    tft.setTextColor(BLACK, RED);
+    statusCalidad = "Calidad baja";
+  } else {
+    tft.setTextColor(BLACK, RED);
+    statusCalidad = "Calidad mala";
+  }
+
+  tft.getTextBounds(statusCalidad, 0, 0, &x1, &y1, &wi, &he);
+  tft.setCursor((screenWidth - wi) / 2, screenHeight / 2 + 40);
+  tft.println(statusCalidad);
 }
 
 void metricasDHT11 (uint16_t x, uint16_t y) {
@@ -109,33 +144,66 @@ void metricasDHT11 (uint16_t x, uint16_t y) {
     Serial.println(F("Failed to read from DHT sensor!"));
     return;
   }
+
+  // Imprimir humedad
+  tft.setTextSize(3);
+  tft.setTextColor(BLACK, CYAN);
   tft.setCursor(x, y-40);
-  tft.setTextSize(3);
+  String humedadStr = " Humedad:";
+  int16_t x1, y1;
+  uint16_t wi, he;
+  tft.getTextBounds(humedadStr, 0, 0, &x1, &y1, &wi, &he);
+  tft.setCursor((screenWidth - wi) / 2, screenHeight / 2 - 80);
+  tft.println(humedadStr);
+
+  // Imprimmir valor humedad
+  tft.setTextSize(4);
   tft.setTextColor(CYAN, BLACK);
-  tft.println("Humedad:");
-  tft.setTextSize(4);
-  tft.print(h);
-  tft.print(" %");
+  String humedadVal = String(h) + " %";
+  tft.getTextBounds(humedadVal, 0, 0, &x1, &y1, &wi, &he);
+  tft.setCursor((screenWidth - wi) / 2, screenHeight / 2 - 50);
+  tft.print(humedadVal);
   tft.println("");
-  tft.println("");
+
+  // Imprimir temperatura
   tft.setTextSize(3);
-  tft.setTextColor(YELLOW, BLACK);
-  tft.println("Temperatura:");
+  tft.setTextColor(BLACK, YELLOW);
+  String tempStr = " Temperatura:";
+  tft.getTextBounds(tempStr, 0, 0, &x1, &y1, &wi, &he);
+  tft.setCursor((screenWidth - wi) / 2, screenHeight / 2 - 10);
+  tft.println(tempStr);
+
+
+  // Imprimir valor de temperatura
   tft.setTextSize(4);
-  tft.print(t);
-  tft.print(" C");
-  tft.println("");
-  tft.println("");
+  tft.setTextColor(YELLOW, BLACK);
+  String tempVal = String(t) + " C";
+  tft.getTextBounds(tempVal, 0, 0, &x1, &y1, &wi, &he);
+  tft.setCursor((screenWidth - wi) / 2, screenHeight / 2 + 20);
+  tft.print(tempVal);
+
+  int rectX = x;
+  int rectY = y + 47;
+  int rectWidth = 216; // Ajusta el ancho del rectángulo según sea necesario
+  int rectHeight = 60; // Ajusta la altura del rectángulo según sea necesario
+  
+  //tft.drawRect(rectX, rectY, rectWidth, rectHeight, YELLOW);
+
+  String statusTemp;
+  
   if(t>20){
     tft.setTextColor(RED, BLACK);
-    tft.println("CALOR");
+    statusTemp = "CALOR";
   }else if (t > 12){
     tft.setTextColor(YELLOW, BLACK);
-    tft.println("TEMPLADO");
+    statusTemp = "TEMPLADO";
   }else {
     tft.setTextColor(GREEN, BLACK);
-    tft.println("FRIO");
+    statusTemp = "FRIO";
   }
+  tft.getTextBounds(statusTemp, 0, 0, &x1, &y1, &wi, &he);
+  tft.setCursor((screenWidth - wi) / 2, screenHeight / 2 + 70);
+  tft.println(statusTemp);
 }
 
 void bienvenida(uint16_t x, uint16_t y) {
